@@ -2,13 +2,14 @@
  
  RBAC YAML configuration for the `jenkins` ServiceAccount, Role, RoleBinding, ClusterRole, and ClusterRoleBinding to ensure the ServiceAccount can create all the resources in your YAML file, including dynamic provisioning with StorageClasses and PersistentVolumes.
 
-Creating Service Account
+# Creating Service Account
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: jenkins
   namespace: webapps
-Create Role
+  
+# Create Role
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -47,7 +48,7 @@ rules:
       - serviceaccounts
       - services
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-Bind the role to service account
+# Bind the role to service account
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -61,7 +62,7 @@ subjects:
 - namespace: webapps 
   kind: ServiceAccount
   name: jenkins 
-Create Cluster role & bind to Service Account
+# Create Cluster role & bind to Service Account
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
