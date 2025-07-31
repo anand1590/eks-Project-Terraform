@@ -2,115 +2,89 @@
  
  RBAC YAML configuration for the `jenkins` ServiceAccount, Role, RoleBinding, ClusterRole, and ClusterRoleBinding to ensure the ServiceAccount can create all the resources in your YAML file, including dynamic provisioning with StorageClasses and PersistentVolumes.
 
-### **1. ServiceAccount**
-```yaml
+Creating Service Account
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: jenkins
   namespace: webapps
-```
-
-
-### **2. Role**
-```yaml
+Create Role
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: jenkins-role
+  name: app-role
   namespace: webapps
 rules:
-  # Permissions for core API resources
-  - apiGroups: [""]
+  - apiGroups:
+        - ""
+        - apps
+        - autoscaling
+        - batch
+        - extensions
+        - policy
+        - rbac.authorization.k8s.io
     resources:
-      - secrets
-      - configmaps
-      - persistentvolumeclaims
-      - services
       - pods
-    verbs: ["get", "list", "watch", "create", "update", "delete","patch"]
-
-  # Permissions for apps API group
-  - apiGroups: ["apps"]
-    resources:
+      - componentstatuses
+      - configmaps
+      - daemonsets
       - deployments
-      - replicasets
-      - statefulsets
-    verbs: ["get", "list", "watch", "create", "update", "delete","patch"]
-
-  # Permissions for networking API group
-  - apiGroups: ["networking.k8s.io"]
-    resources:
-      - ingresses
-    verbs: ["get", "list", "watch", "create", "update", "delete","patch"]
-
-  # Permissions for autoscaling API group
-  - apiGroups: ["autoscaling"]
-    resources:
+      - events
+      - endpoints
       - horizontalpodautoscalers
-    verbs: ["get", "list", "watch", "create", "update", "delete","patch"]
-```
-
-
-### **3. RoleBinding**
-```yaml
+      - ingress
+      - jobs
+      - limitranges
+      - namespaces
+      - nodes
+      - secrets
+      - pods
+      - persistentvolumes
+      - persistentvolumeclaims
+      - resourcequotas
+      - replicasets
+      - replicationcontrollers
+      - serviceaccounts
+      - services
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+Bind the role to service account
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: jenkins-rolebinding
-  namespace: webapps
+  name: app-rolebinding
+  namespace: webapps 
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: jenkins-role
+  name: app-role 
 subjects:
-  - kind: ServiceAccount
-    name: jenkins
-    namespace: webapps
-```
-
-
-### **4. ClusterRole**
-```yaml
+- namespace: webapps 
+  kind: ServiceAccount
+  name: jenkins 
+Create Cluster role & bind to Service Account
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: jenkins-cluster-role
 rules:
-  # Permissions for persistentvolumes
-  - apiGroups: [""]
-    resources:
-      - persistentvolumes
-    verbs: ["get", "list", "watch", "create", "update", "delete"]
-  # Permissions for storageclasses
-  - apiGroups: ["storage.k8s.io"]
-    resources:
-      - storageclasses
-    verbs: ["get", "list", "watch", "create", "update", "delete"]
-  # Permissions for ClusterIssuer
-  - apiGroups: ["cert-manager.io"]
-    resources:
-      - clusterissuers
-    verbs: ["get", "list", "watch", "create", "update", "delete"]
+- apiGroups: [""]
+  resources: ["persistentvolumes"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 
-```
+---
 
-
-### **5. ClusterRoleBinding**
-```yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: jenkins-cluster-rolebinding
+  name: jenkins-cluster-role-binding
+subjects:
+- kind: ServiceAccount
+  name: jenkins
+  namespace: webapps
 roleRef:
-  apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: jenkins-cluster-role
-subjects:
-  - kind: ServiceAccount
-    name: jenkins
-    namespace: webapps
-```
+  apiGroup: rbac.authorization.k8s.io
 
 
 
